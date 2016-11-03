@@ -8,6 +8,17 @@ class BSTNode(object):
     def isLeaf(self):
         return not self.left and not self.right
 
+    @property
+    def height(self):
+        if self.isLeaf:
+            return 0
+        else:
+            left_height = self.left.height + 1 if self.left else 0
+            right_height = self.right.height + 1 if self.right else 0
+            return max([left_height, right_height])
+
+
+
     def insert(self, value):
         # small to the left, big to the right
         # if it's already in the tree, don't do anything
@@ -55,26 +66,43 @@ class BSTNode(object):
                 return self.right.findParent(value)
 
 
-    # def delete(self, value):
-    #     root = self.findParent(value)
-    #     node = self.search(value)
-    #     # if tree is JUST a leaf
-    #     if value == node.value:
-    #         if node.isLeaf:
-    #             node == None
+    def delete(self, value):
+        parent = self.findParent(value)
+        node = self.search(value)
 
-    #     # if only left
-    #     if node.left and not node.right:
-    #         parent.left = node.left
-    #         node = None
-    #     #if only right
-    #     if node.right and not node.left:
-    #         parent.right = node.right
-    #         node = None
+        if not node:
+            return False
 
+        # if tree is a leaf
+        if value == node.value:
+            if parent:
+                    choice = 'left' if node.value < parent.value else 'right'
+            if node.isLeaf:
+                if not parent: # if it's the only value in tree
+                    node = None
+                else:
+                    setattr(parent, choice, None)
+            else:
 
-    #     node = self.search(value)
-    #     if node
+                # if only left
+                if node.left and not node.right:
+                    setattr(parent, choice, node.left)
+                    node = None
+                #if only right
+                elif node.right and not node.left:
+                    setattr(parent, choice, node.right)
+                    node = None
+                # if both children exist
+                else:
+                    largest_value = node.left
+                    while largest_value.right:
+                        # find largest value in left subtree
+                        largest_value = largest_value.right
+                    # set the parent's right pointo of larget_value to None
+                    self.findParent(largest_value.value).right = None
+                    node.value = largest_value.value
+        return True
+
 
     def traversePreorder(self):
         # N L R
@@ -83,7 +111,8 @@ class BSTNode(object):
             for value in self.left.traversePreorder():
                 yield value
         if self.right:
-            self.right.traversePreorder()
+            for value in self.right.traversePreorder():
+                yield value
 
     def traversePostorder(self):
         # L R N
@@ -116,10 +145,26 @@ def main():
     # import pdb;pdb.set_trace()
     # root.traversePreorder()
     # root.traversePostorder()
-    # for i in root.traverseInorder():
-    #     print i
-    print root.search(14).value
-    print root.findParent(7).value
+    for i in root.traversePreorder():
+        print i
+
+    root.delete(9)
+    root.delete(17)
+    root.delete(31)
+    root.delete(7)
+    root.delete(14)
+    print '\n'
+    for i in root.traversePreorder():
+        print i
+
+    print root.height
+    # x = root.search(14)
+    # y = x.right.value
+    # print x.right.value
+    # y = 30
+    # print x.right.value
+    # print root.findParent(7).value
+
 
 
 
